@@ -974,6 +974,22 @@ static void applyMapRelo(ifstream& elfFile, vector<unique_fd> &mapFds, vector<co
     }
 }
 
+unsigned kernelVersion() {
+    struct utsname buf;
+    int ret = uname(&buf);
+    if (ret) return 0;
+
+    unsigned kver_major;
+    unsigned kver_minor;
+    unsigned kver_sub;
+    char dummy;
+    ret = sscanf(buf.release, "%u.%u.%u%c", &kver_major, &kver_minor, &kver_sub, &dummy);
+    // Check the device kernel version
+    if (ret < 3) return 0;
+
+    return KVER(kver_major, kver_minor, kver_sub);
+}
+
 static int loadCodeSections(const char* elfPath, vector<codeSection>& cs, const string& license,
                             const char* prefix, const unsigned long long allowedDomainBitmask) {
     unsigned kvers = kernelVersion();
